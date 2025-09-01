@@ -20,12 +20,7 @@ namespace Services.Services
         public Task<IEnumerable<Students>> GetAllAsync()
         {
             var studentAllData = _studentRepository.GetAllAsync();
-            
-            foreach (var item in studentAllData.Result.ToList())
-            {
-
-            }
-
+           
             return studentAllData;
         }
 

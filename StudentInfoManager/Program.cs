@@ -5,6 +5,7 @@ using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Services.Services;
+using StudentInfoManager.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,6 +96,9 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+// middlewares
+app.UseExceptionHandlingMiddleware();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

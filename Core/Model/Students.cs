@@ -21,7 +21,7 @@ namespace Core.Model
         public string LastName { get; set; }
 
         [Required, EmailAddress, StringLength(100)]
-        [Display(Name = "Last Name")]
+        [Display(Name = "Email")]
         public string Email { get; set; }
 
         [Required, StringLength(200)]

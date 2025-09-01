@@ -21,7 +21,8 @@ namespace Infrastructure.Repositories
 
         public async Task<IEnumerable<Students>> GetAllAsync()
         {
-            return await _context.Students.ToListAsync();
+            return await _context.Students.Include(s => s.City)
+                                          .Include(s => s.State).ToListAsync();
         }
 
         public async Task<Students> GetByIdAsync(int id)

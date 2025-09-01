@@ -2,25 +2,25 @@
 
 <h2>Student List</h2>
 
-<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createModal">Create Student</button>
+<button class="btn btn-primary mb-3" id="btnAddStudent" data-bs-toggle="modal" data-bs-target="#studentModal">Create Student</button>
 
 <div id="studentsGrid">
     @await Html.PartialAsync("_StudentGrid", Model)
 </div>
 
 <!-- Modal -->
-<div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="studentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content rounded-3 shadow-lg">
 
             <!-- Header -->
             <div class="modal-header bg-primary text-white border-bottom">
-                <h5 class="modal-title fw-semibold">Create Student</h5>
+                <h5 class="modal-title fw-semibold" id="studentModalTitle"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <!-- Body -->
-            <div class="modal-body" id="createModalBody">
+            <div class="modal-body" id="studentModalBody">
                 <!-- AJAX-loaded content -->
             </div>
         </div>
@@ -29,9 +29,11 @@
 <script>
        $(document).ready(function () {
         // Load form into modal
-        $('#createModal').one('show.bs.modal', function () {
-            $('#createModalBody').html(''); // Clear previous content
-            $('#createModalBody').load('/Admin/Create');
+        $('#btnAddStudent').click(function () {
+            $('#studentModalTitle').text('Create Student');
+            $('#studentModalBody').html('');
+            $('#studentModalBody').load('/Admin/Create');
+            $('#studentModal').modal('show');
         });
 
         // Ensure form submit is bound only once
@@ -49,7 +51,7 @@
                 processData: false,
                 contentType: false,
                 success: function () {
-                    $('#createModal').modal('hide');
+                    $('#studentModal').modal('hide');
                     $('body').removeClass('modal-open');
                     $('.modal-backdrop').remove();
 
@@ -62,7 +64,7 @@
         });
 
         function refreshGrid() {
-            $('#studentsGrid').load('/Admin/LoadGrid');
+            //need to write code
         }
     });
 

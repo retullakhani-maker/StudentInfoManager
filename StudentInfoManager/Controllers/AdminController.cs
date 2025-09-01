@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Services.Services;
+using System;
 using System.Security.Claims;
 
 namespace StudentInfoManager.Controllers
@@ -21,11 +22,11 @@ namespace StudentInfoManager.Controllers
         private readonly IStateService _stateService;
         private readonly ICityService _cityService;
 
-        public AdminController(ApplicationDbContext context, 
-                                IWebHostEnvironment env, 
+        public AdminController(ApplicationDbContext context,
+                                IWebHostEnvironment env,
                                 UserManager<ApplicationUser> userManager,
                                 IStudentService studentService,
-                                IStateService stateService, 
+                                IStateService stateService,
                                 ICityService cityService)
         {
             _context = context;
@@ -55,14 +56,9 @@ namespace StudentInfoManager.Controllers
         public async Task<IActionResult> Create()
         {
             var states = await _stateService.GetAllStatesAsync();
+            PopulateDropdowns();
 
-            ViewBag.States = states
-                .Select(s => new SelectListItem { Value = s.Id.ToString(), Text = s.Name })
-                .ToList();
-
-            ViewBag.Cities = new List<SelectListItem>(); // Empty initially
-
-            return PartialView("_Create");
+            return PartialView("_StudentForm");
         }
 
         // Get Cities by StateId (AJAX)
@@ -79,87 +75,131 @@ namespace StudentInfoManager.Controllers
         {
             try
             {
-                if (PhotoFile != null && PhotoFile.Length > 0)
+                if (student?.Id == Guid.Empty)
                 {
-                    var uploads = Path.Combine(_env.WebRootPath, "uploads");
-                    Directory.CreateDirectory(uploads);
-                    var filePath = Path.Combine(uploads, PhotoFile.FileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    if (PhotoFile != null && PhotoFile.Length > 0)
                     {
-                        await PhotoFile.CopyToAsync(stream);
-                    }
+                        var uploads = Path.Combine(_env.WebRootPath, "uploads");
+                        Directory.CreateDirectory(uploads);
+                        var filePath = Path.Combine(uploads, PhotoFile.FileName);
 
-                    student.PhotoPath = "/uploads/" + PhotoFile.FileName;
-                }
-
-                if (ModelState.IsValid || (student?.State == null && student?.City == null))
-                {
-                    var user = new ApplicationUser
-                    {
-                        UserName = student.Email,
-                        Email = student.Email,
-                        PhoneNumber = student.PhoneNumber,
-                        Role= "Student"
-                    };
-
-                    var result = await _userManager.CreateAsync(user, "Student@123");
-
-
-                    if (result.Succeeded)
-                    {
-                        // 2️⃣ Assign Role
-                        await _userManager.AddToRoleAsync(user, "Student");
-
-                        // 3️⃣ Assign Claims (based on your Students entity)
-                        await _userManager.AddClaimAsync(user, new Claim(CustomClaimTypes.FullName, student.FirstName + " " + student.LastName));
-                        await _userManager.AddClaimAsync(user, new Claim(CustomClaimTypes.City, student.City?.Name ?? ""));
-                        await _userManager.AddClaimAsync(user, new Claim(CustomClaimTypes.State, student.State?.Name ?? ""));
-
-                        // 4️⃣ Save mapping in Students table
-                        student.User = user;
-                        student.ApplicationUserId = user.Id.ToString();
-                        student.Id = Guid.NewGuid();
-
-                        _context.Add(student);
-                        await _context.SaveChangesAsync();
-
-                        return Ok(); // success
-                    }
-                    else
-                    {
-                        foreach (var error in result.Errors)
+                        using (var stream = new FileStream(filePath, FileMode.Create))
                         {
-                            ModelState.AddModelError("", error.Description);
+                            await PhotoFile.CopyToAsync(stream);
+                        }
+
+                        student.PhotoPath = "/uploads/" + PhotoFile.FileName;
+                    }
+
+                    if (ModelState.IsValid || (student?.State == null && student?.City == null))
+                    {
+                        var user = new ApplicationUser
+                        {
+                            UserName = student.Email,
+                            Email = student.Email,
+                            PhoneNumber = student.PhoneNumber,
+                            Role = "Student"
+                        };
+
+                        var result = await _userManager.CreateAsync(user, "Student@123");
+
+
+                        if (result.Succeeded)
+                        {
+                            // 2️⃣ Assign Role
+                            await _userManager.AddToRoleAsync(user, "Student");
+
+                            // 3️⃣ Assign Claims (based on your Students entity)
+                            await _userManager.AddClaimAsync(user, new Claim(CustomClaimTypes.FullName, student.FirstName + " " + student.LastName));
+                            await _userManager.AddClaimAsync(user, new Claim(CustomClaimTypes.City, student.City?.Name ?? ""));
+                            await _userManager.AddClaimAsync(user, new Claim(CustomClaimTypes.State, student.State?.Name ?? ""));
+
+                            // 4️⃣ Save mapping in Students table
+                            student.User = user;
+                            student.ApplicationUserId = user.Id.ToString();
+                            student.Id = Guid.NewGuid();
+
+                            _context.Add(student);
+                            await _context.SaveChangesAsync();
+
+                            return Ok(); // success
+                        }
+                        else
+                        {
+                            foreach (var error in result.Errors)
+                            {
+                                ModelState.AddModelError("", error.Description);
+                            }
                         }
                     }
                 }
+                else
+                {
+                    StudentUpdate(student, PhotoFile);
+                }
                 // Re-populate dropdowns if validation fails
-                ViewBag.States = new SelectList(_context.States, "Id", "Name", student.StateId);
-                ViewBag.Cities = new SelectList(_context.Cities, "Id", "Name", student.CityId);
+                PopulateDropdowns();
             }
             catch (Exception e)
             {
                 return BadRequest(e);
             }
-           
+
             return BadRequest(ModelState);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> StudentEdit(Guid id)
         {
-            var student = await _context.Students.FindAsync(id);
+            var student = await _context.Students.Include(s => s.City)
+                                                 .Include(s => s.State)
+                                                 .FirstOrDefaultAsync(T => T.Id == id);
+
             if (student == null)
+            {
                 return NotFound();
-            
-            return PartialView("_Create", student); // reuse same form
+            }
+
+            // Populate dropdowns
+            PopulateDropdowns(student.StateId, student.CityId);
+
+            return PartialView("_StudentForm", student); // reuse same form
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Students student, IFormFile? Photo)
+
+        private void PopulateDropdowns(int? stateId = null, int? cityId = null)
         {
-            if (ModelState.IsValid)
+            ViewBag.States = _context.States
+        .Select(s => new SelectListItem
+        {
+            Value = s.Id.ToString(),
+            Text = s.Name,
+            Selected = (stateId != null && s.Id == stateId)
+        })
+        .ToList();
+
+            // Cities dropdown
+            if (cityId != null)
+            {
+                ViewBag.Cities = _context.Cities
+                    .Where(c => c.StateId == stateId)
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Name,
+                        Selected = (cityId != null && c.Id == cityId)
+                    })
+                    .ToList();
+            }
+            else
+            {
+                // blank list if no state selected
+                ViewBag.Cities = new List<SelectListItem>();
+            }
+        }
+
+        public async Task<IActionResult> StudentUpdate(Students student, IFormFile? Photo)
+        {
+            if (ModelState.IsValid || (student?.State == null && student?.City == null))
             {
                 var existing = await _context.Students.FindAsync(student.Id);
                 if (existing == null) return NotFound();
@@ -195,11 +235,11 @@ namespace StudentInfoManager.Controllers
                 return Ok();
             }
 
-            return PartialView("_Create", student);
+            return PartialView("_StudentForm", student);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> StudentDelete(Guid id)
         {
             var student = await _context.Students.FindAsync(id);
             if (student == null) return NotFound();

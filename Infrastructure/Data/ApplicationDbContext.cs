@@ -13,6 +13,8 @@ namespace Infrastructure.Data
         public DbSet<Students> Students { get; set; }
         public DbSet<Cities> Cities { get; set; }
         public DbSet<States> States { get; set; }
+        public DbSet<ErrorLog> ErrorLogs { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
