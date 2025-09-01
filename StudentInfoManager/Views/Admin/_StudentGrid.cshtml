@@ -1,0 +1,65 @@
+﻿@model IEnumerable<Core.Model.Students>
+
+<table id="studentTable"
+       class="table table-bordered"
+       data-toggle="table"
+       data-search="true"
+       data-pagination="true"
+       data-page-size="5"
+       data-page-list="[5, 10, 20, 50, 100]"
+       data-show-columns="true"
+       data-show-refresh="true">
+
+    <thead>
+        <tr>
+            <th data-field="photo" data-formatter="photoFormatter">Photo</th>
+            <th data-field="firstName">First Name</th>
+            <th data-field="lastName">Last Name</th>
+            <th data-field="address">Address</th>
+            <th data-field="phone">Phone</th>
+            <th data-field="gender">Gender</th>
+            <th data-field="city">City</th>
+            <th data-field="state">State</th>
+            <th data-field="birthplace">Birthplace</th>
+            <th data-field="dob">DOB</th>
+            <th data-field="actions" data-formatter="actionFormatter">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.PhotoPath</td>
+                <td>@student.FirstName</td>
+                <td>@student.LastName</td>
+                <td>@student.Address</td>
+                <td>@student.PhoneNumber</td>
+                <td>@student.Gender</td>
+                <td>@student.City</td>
+                <td>@student.State</td>
+                <td>@student.Birthplace</td>
+                <td>@student.DateOfBirth.ToString("yyyy-MM-dd")</td>
+                <td>@student.Id</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+<script>
+
+    function photoFormatter(value, row) {
+        if (value)
+            return `<img src="${value}" width="40" height="40" />`;
+        return 'No Photo';
+    }
+
+
+    function actionFormatter(value, row) {
+        return `
+                    <a href="/Admin/Edit/${value}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="/Admin/Delete/${value}" class="btn btn-sm btn-danger">Delete</a>
+                `;
+
+    }
+</script>
