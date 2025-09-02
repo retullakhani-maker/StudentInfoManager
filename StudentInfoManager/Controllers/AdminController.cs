@@ -229,9 +229,17 @@ namespace StudentInfoManager.Controllers
 
                     existing.PhotoPath = "/uploads/" + fileName;
                 }
+                try
+                {
+                    _context.Update(existing);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
 
-                _context.Update(existing);
-                await _context.SaveChangesAsync();
+                    throw;
+                }
+                
                 return Ok();
             }
 
