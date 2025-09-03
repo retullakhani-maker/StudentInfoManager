@@ -1,10 +1,13 @@
 ﻿using Core.Interfaces;
 using Core.Model;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Services.Services;
+using StudentInfoManager.Job;
 using StudentInfoManager.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,7 +49,11 @@ builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IStateService, StateService>();
 builder.Services.AddScoped<ICityService, CityService>();
 
+builder.Services.AddScoped<StudentJobManager>();
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddHangfire(config => config.UseMemoryStorage());
+builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
@@ -88,6 +95,16 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(user, "Admin");
         }
     }
+
+    //Hangfire job manager
+    var jobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    var studentJobManager = scope.ServiceProvider.GetRequiredService<StudentJobManager>();
+
+    jobManager.AddOrUpdate(
+        "daily-student-job",
+        () => studentJobManager.AddDailyStudent(),
+        "0 10 * * *"   // every day at 10:00 AM
+    );
 }
 
 // Configure the HTTP request pipeline.
@@ -108,6 +125,8 @@ app.UseRouting();
 // 👇 Order matters
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/hangfire");
 
 app.MapControllerRoute(
     name: "default",

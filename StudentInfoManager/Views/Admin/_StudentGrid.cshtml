@@ -87,7 +87,8 @@
     function deleteStudent(id) {
         if (confirm('Are you sure you want to delete this student?')) {
             $.post('/Admin/StudentDelete/' + id, function () {
-                $('#studentTable').DataTable().ajax.reload(); // reload table
+                location.reload();
+                //$('#studentTable').DataTable().ajax.reload(); // reload table
             }).fail(function () {
                 alert('Error deleting student.');
             });
