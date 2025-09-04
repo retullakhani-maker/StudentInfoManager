@@ -1,0 +1,72 @@
+﻿@model Core.Model.Students
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Left side: Profile -->
+        <div class="col-md-4 text-center">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <img src="@Model.PhotoPath"
+                         class="img-thumbnail rounded-circle mb-3"
+                         width="150" height="150"
+                         onerror="this.src='/images/default-user.png';" />
+                    <h4 class="fw-bold">@Model.FirstName @Model.LastName</h4>
+                    <p class="text-muted">@Model.Gender</p>
+                    <p><i class="bi bi-phone"></i> @Model.PhoneNumber</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side: Details -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    Student Information
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-striped mb-0">
+                        <tbody>
+                            <tr>
+                                <th style="width: 30%;">First Name</th>
+                                <td>@Model.FirstName</td>
+                            </tr>
+                            <tr>
+                                <th>Last Name</th>
+                                <td>@Model.LastName</td>
+                            </tr>
+                            <tr>
+                                <th>Address</th>
+                                <td>@Model.Address</td>
+                            </tr>
+                            <tr>
+                                <th>Phone</th>
+                                <td>@Model.PhoneNumber</td>
+                            </tr>
+                            <tr>
+                                <th>Gender</th>
+                                <td>@Model.Gender</td>
+                            </tr>
+                            <tr>
+                                <th>State</th>
+                                <td>@Model.State?.Name</td>
+                            </tr>
+                            <tr>
+                                <th>City</th>
+                                <td>@Model.City?.Name</td>
+                            </tr>
+                            <tr>
+                                <th>Birthplace</th>
+                                <td>@Model.Birthplace</td>
+                            </tr>
+                            <tr>
+                                <th>Date of Birth</th>
+                                <td>@Model.DateOfBirth.ToString("dd-MMM-yyyy")</td>
+                            </tr>
+                            <!-- Add more fields if available in Students model -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

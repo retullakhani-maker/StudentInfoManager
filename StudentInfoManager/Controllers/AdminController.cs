@@ -119,8 +119,7 @@ namespace StudentInfoManager.Controllers
                             student.ApplicationUserId = user.Id.ToString();
                             student.Id = Guid.NewGuid();
 
-                            _context.Add(student);
-                            await _context.SaveChangesAsync();
+                            await _studentService.AddAsync(student);
 
                             return Ok(); // success
                         }
@@ -151,9 +150,7 @@ namespace StudentInfoManager.Controllers
         [HttpGet]
         public async Task<IActionResult> StudentEdit(Guid id)
         {
-            var student = await _context.Students.Include(s => s.City)
-                                                 .Include(s => s.State)
-                                                 .FirstOrDefaultAsync(T => T.Id == id);
+            var student = await _studentService.GetByIdAsync(id);
 
             if (student == null)
             {
@@ -168,20 +165,24 @@ namespace StudentInfoManager.Controllers
 
         private void PopulateDropdowns(int? stateId = null, int? cityId = null)
         {
-            ViewBag.States = _context.States
-        .Select(s => new SelectListItem
-        {
-            Value = s.Id.ToString(),
-            Text = s.Name,
-            Selected = (stateId != null && s.Id == stateId)
-        })
-        .ToList();
+            var states = _stateService.GetAllStatesAsync();
+
+            ViewBag.States = states
+                .Result.Select(s => new SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.Name,
+                    Selected = (stateId != null && s.Id == stateId)
+                })
+                .ToList();
+
 
             // Cities dropdown
             if (cityId != null)
             {
-                ViewBag.Cities = _context.Cities
-                    .Where(c => c.StateId == stateId)
+                var cities = _cityService.GetCitiesByStateIdAsync(Convert.ToInt32(stateId));
+
+                ViewBag.Cities = cities.Result
                     .Select(c => new SelectListItem
                     {
                         Value = c.Id.ToString(),
@@ -201,7 +202,7 @@ namespace StudentInfoManager.Controllers
         {
             if (ModelState.IsValid || (student?.State == null && student?.City == null))
             {
-                var existing = await _context.Students.FindAsync(student.Id);
+                var existing = await _studentService.GetByIdAsync(student.Id);
                 if (existing == null) return NotFound();
 
                 // Update scalar properties
@@ -231,12 +232,10 @@ namespace StudentInfoManager.Controllers
                 }
                 try
                 {
-                    _context.Update(existing);
-                    await _context.SaveChangesAsync();
+                    await _studentService.UpdateAsync(existing);
                 }
                 catch (Exception e)
                 {
-
                     throw;
                 }
                 
@@ -249,23 +248,20 @@ namespace StudentInfoManager.Controllers
         [HttpPost]
         public async Task<IActionResult> StudentDelete(Guid id)
         {
-            var student = await _context.Students.FindAsync(id);
-            if (student == null) return NotFound();
+            await _studentService.DeleteAsync(id);
 
-            _context.Students.Remove(student);
-            await _context.SaveChangesAsync();
             return Ok();
         }
 
         // ========================= DETAILS =========================
 
         [HttpGet]
-        public async Task<IActionResult> Details(Guid id)
+        public async Task<IActionResult> StudentDetails(Guid id)
         {
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == id);
+            var student = await _studentService.GetByIdAsync(id);
             if (student == null) return NotFound();
 
-            return PartialView("_Details", student); // you can create a _Details partial
+            return PartialView("_StudentDetails", student); // you can create a _Details partial
         }
     }
 }

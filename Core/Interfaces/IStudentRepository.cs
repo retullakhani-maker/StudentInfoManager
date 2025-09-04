@@ -9,10 +9,10 @@ namespace Core.Interfaces
 {
     public interface IStudentRepository
     {
-        Task<Students> GetByIdAsync(int id);
+        Task<Students> GetByIdAsync(Guid id);
         Task<IEnumerable<Students>> GetAllAsync();
         Task AddAsync(Students student);
         Task UpdateAsync(Students student);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(Guid id);
     }
 }

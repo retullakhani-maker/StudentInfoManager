@@ -16,9 +16,9 @@ namespace StudentInfoManager.Job
         {
             var student = new Students
             {
-                FirstName = "Daily Student FirstName" + DateTime.Now.ToString("yyyyMMddhhmm"),
-                LastName = "Daily Student LastName" + DateTime.Now.ToString("yyyyMMddhhmm"),
-                Email = "DailyStudent" + DateTime.Now.ToString("yyyyMMddhhmm") + "@test.com",
+                FirstName = "FirstName" + DateTime.Now.ToString("yyMMddhhmm"),
+                LastName = "LastName" + DateTime.Now.ToString("yyMMddhhmm"),
+                Email = "DailyStudent" + DateTime.Now.ToString("yyMMddhhmm") + "@test.com",
                 Address = "Daily Student Address" + DateTime.Now.ToString("yyyyMMdd"),
                 PhoneNumber = "9988776655",
                 Gender = "Male",

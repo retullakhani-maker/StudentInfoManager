@@ -24,7 +24,7 @@ namespace Services.Services
             return studentAllData;
         }
 
-        public Task<Students> GetByIdAsync(int id)
+        public Task<Students> GetByIdAsync(Guid id)
         {
             return _studentRepository.GetByIdAsync(id);
         }
@@ -39,7 +39,7 @@ namespace Services.Services
             return _studentRepository.UpdateAsync(student);
         }
 
-        public Task DeleteAsync(int id)
+        public Task DeleteAsync(Guid id)
         {
             return _studentRepository.DeleteAsync(id);
         }

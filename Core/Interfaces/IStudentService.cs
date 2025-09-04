@@ -10,9 +10,9 @@ namespace Core.Interfaces
     public interface IStudentService
     {
         Task<IEnumerable<Students>> GetAllAsync();
-        Task<Students> GetByIdAsync(int id);
+        Task<Students> GetByIdAsync(Guid id);
         Task AddAsync(Students student);
         Task UpdateAsync(Students student);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(Guid id);
     }
 }

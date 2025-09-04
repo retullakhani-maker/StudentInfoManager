@@ -4,15 +4,9 @@
     <thead>
         <tr>
             <th>Photo</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Address</th>
+            <th>Name</th>
             <th>Phone</th>
-            <th>Gender</th>
-            <th>State</th>
             <th>City</th>
-            <th>Birthplace</th>
-            <th>DOB</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -21,20 +15,30 @@
         {
             <tr>
                 <td>@student.PhotoPath</td>
-                <td>@student.FirstName</td>
-                <td>@student.LastName</td>
-                <td>@student.Address</td>
+                <td>@($"{student.FirstName} {student.LastName}")</td>
                 <td>@student.PhoneNumber</td>
-                <td>@student.Gender</td>
-                <td>@student.State?.Name</td>
                 <td>@student.City?.Name</td>
-                <td>@student.Birthplace</td>
-                <td>@student.DateOfBirth.ToString("yyyy-MM-dd")</td>
-                <td>@student.Id</td> <!-- We'll replace this in DataTable render -->
+                <td>@student.Id</td> <!-- For DataTable render -->
             </tr>
         }
     </tbody>
 </table>
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="studentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="studentModalTitle">Student Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="studentModalBody">
+                <!-- Student details will load here -->
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     $(document).ready(function () {
         $('#studentTable').DataTable({
@@ -42,23 +46,26 @@
             searching: true,
             ordering: true,
             responsive: true,
-            pageLength: 3,
-            lengthMenu: [3, 10, 25, 50, -1],
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, -1],
             columnDefs: [
                 {
                     targets: 0, // Photo column
-                    render: function (data, type, row) {
+                    render: function (data) {
                         if (data)
-                            return `<img src="${data}" width="40" height="40" />`;
+                            return `<img src="${data}" width="40" height="40" class="rounded-circle"/>`;
                         return 'No Photo';
                     }
                 },
                 {
-                    targets: 10, // Actions column (last column)
+                    targets: 4, // Actions column
                     orderable: false,
                     searchable: false,
-                    render: function (data, type, row) {
+                    render: function (data) {
                         return `
+                            <button class="btn btn-sm btn-info" onclick="viewDetails('${data}')">
+                                <i class="bi bi-eye"></i> Details
+                            </button>
                             <button class="btn btn-sm btn-warning" onclick="openEditModal('${data}')">
                                 <i class="bi bi-pencil-square"></i> Edit
                             </button>
@@ -72,9 +79,21 @@
         });
     });
 
+    function viewDetails(id) {
+        $('#studentModalTitle').text('Student Details');
+        $('#studentModalBody').html("<p>Loading...</p>");
+        $('#studentModal').modal('show');
+
+        $.get('/Admin/StudentDetails/' + id, function (html) {
+            $('#studentModalBody').html(html);
+        }).fail(function () {
+            alert('Failed to load student details.');
+        });
+    }
+
     function openEditModal(id) {
         $('#studentModalTitle').text('Edit Student');
-        $('#studentModalBody').html("");
+        $('#studentModalBody').html("<p>Loading...</p>");
         $('#studentModal').modal('show');
 
         $.get('/Admin/StudentEdit/' + id, function (html) {
@@ -88,10 +107,10 @@
         if (confirm('Are you sure you want to delete this student?')) {
             $.post('/Admin/StudentDelete/' + id, function () {
                 location.reload();
-                //$('#studentTable').DataTable().ajax.reload(); // reload table
             }).fail(function () {
                 alert('Error deleting student.');
             });
         }
     }
 </script>
+

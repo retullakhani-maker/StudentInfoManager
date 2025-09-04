@@ -25,9 +25,10 @@ namespace Infrastructure.Repositories
                                           .Include(s => s.State).ToListAsync();
         }
 
-        public async Task<Students> GetByIdAsync(int id)
+        public async Task<Students> GetByIdAsync(Guid id)
         {
-            return await _context.Students.FindAsync(id);
+            return await _context.Students.Include(s => s.City)
+                                          .Include(s => s.State).FirstOrDefaultAsync(t=>t.Id == id);
         }
 
         public async Task AddAsync(Students student)
@@ -42,7 +43,7 @@ namespace Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var student = await _context.Students.FindAsync(id);
             if (student != null)
