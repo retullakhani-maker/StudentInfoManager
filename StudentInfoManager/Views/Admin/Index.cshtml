@@ -46,7 +46,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: '/Admin/Create',
+                url: '/Admin/Save',
                 data: formData,
                 processData: false,
                 contentType: false,
@@ -63,9 +63,17 @@
             });
         });
 
-        function refreshGrid() {
-            //need to write code
-        }
+         // --- Refresh grid after successful save ---
+        window.refreshGrid = function () {
+            $('#studentsGrid').html('Loading...');
+            $.get('/Admin/LoadGrid')
+                .done(function (html) {
+                    $('#studentsGrid').html(html);
+                })
+                .fail(function () {
+                    $('#studentsGrid').html('<div class="text-danger">Failed to load students.</div>');
+                });
+        };
     });
 
 </script>

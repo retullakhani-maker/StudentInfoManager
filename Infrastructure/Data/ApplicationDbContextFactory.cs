@@ -15,7 +15,7 @@ namespace Infrastructure.Data
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
             // Use your connection string here
-            optionsBuilder.UseSqlServer("Server=RTL\\RTL;Database=StudentInfoDB;User Id=sa;Password=rtl;MultipleActiveResultSets=true;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer("Data Source=RTL\\RTL;Initial Catalog=StudentInfoDB;User ID=sa;Password=rtl;Encrypt=True;Trust Server Certificate=True");
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }

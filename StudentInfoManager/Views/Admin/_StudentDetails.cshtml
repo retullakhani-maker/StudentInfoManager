@@ -7,7 +7,7 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <img src="@Model.PhotoPath"
-                         class="img-thumbnail rounded-circle mb-3"
+                         class="img-thumbnail mb-3"
                          width="150" height="150"
                          onerror="this.src='/images/default-user.png';" />
                     <h4 class="fw-bold">@Model.FirstName @Model.LastName</h4>
@@ -33,6 +33,10 @@
                             <tr>
                                 <th>Last Name</th>
                                 <td>@Model.LastName</td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td>@Model.Email</td>
                             </tr>
                             <tr>
                                 <th>Address</th>

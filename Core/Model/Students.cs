@@ -10,7 +10,7 @@ namespace Core.Model
     public class Students
     {
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; set; }
 
         [Required, StringLength(50)]
         [Display(Name = "First Name")]
